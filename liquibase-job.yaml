@@ -1,0 +1,41 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: liquibase-job
+  namespace: liquibase
+spec:
+  template:
+    spec:
+      initContainers: 
+      - name: aws-cli
+        image: amazon/aws-cli 
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            aws s3 cp s3://liquibase-s3-walter-bucket/SCHEMA /liquibase/sql/SCHEMA/ --recursive &&
+            aws s3 cp s3://liquibase-s3-walter-bucket/DATA /liquibase/sql/DATA/ --recursive &&
+            aws s3 cp s3://liquibase-s3-walter-bucket/changelog /liquibase/changelog/ --recursive --exclude "*" --include "*.xml"
+
+        volumeMounts:
+        - name: liquibase-storage
+          mountPath: /liquibase 
+
+      containers:
+      - name: liquibase
+        image: liquibase/liquibase
+        command: ["liquibase"]
+        args:
+          - "--changeLogFile=/liquibase/changelog/db.changelog-master.xml"
+          - "--url=jdbc:postgresql://postgres:5432/testdb"
+          - "--username=postgres"
+          - "--password=postgres123"
+          - "--searchPath=/liquibase/changelog,/liquibase/sql/SCHEMA,/liquibase/sql/DATA"
+          - "update"
+        volumeMounts:
+        - name: liquibase-storage
+          mountPath: /liquibase 
+      restartPolicy: OnFailure
+      volumes:
+      - name: liquibase-storage
+        emptyDir: {}
+

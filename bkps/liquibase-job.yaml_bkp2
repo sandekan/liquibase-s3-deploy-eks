@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: liquibase-job
+  namespace: liquibase
+spec:
+  template:
+    spec:
+      containers:
+      - name: liquibase
+        image: liquibase/liquibase
+        command: ["liquibase"]
+        args:
+          - "--changeLogFile=db.changelog-master.xml"
+          - "--url=jdbc:postgresql://postgres:5432/testdb"
+          - "--username=postgres"
+          - "--password=postgres123"
+          - "--searchPath=/liquibase/changelog,/liquibase/sql/CREATE"
+          - "update"
+        volumeMounts:
+        - name: changelog-volume
+          mountPath: /liquibase/changelog
+        - name: sql-volume
+          mountPath: /liquibase/sql
+      restartPolicy: OnFailure
+      volumes:
+      - name: changelog-volume
+        configMap:
+          name: liquibase-changelog
+      - name: sql-volume
+        hostPath:
+          path: /mnt/sql

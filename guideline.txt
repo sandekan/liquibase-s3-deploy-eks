@@ -1,0 +1,12 @@
+POINTS TO CONSIDER
+1. We need to seperate dev, statging, and prod deployment
+2. We have different database engines(Postgresql, Mysql, Sql Server and MongoDB) and each of these engines have multiple databases, how do we structure the folders
+3. Look into Rollback possibilities
+4. Look into options to manage secrets maybe exploit secrets manager
+5. Exploit options to store sqls in s3
+6. Add tagging for to manage release
+7. Add a github workflow, that will do a PR checks 
+8. Will github smoothly manage the creation of new jobs.
+9. Develop proper naming convention and standards
+10. Develop README file as we progress
+11. Exploit all options  on what needs to go into the liquibase job
